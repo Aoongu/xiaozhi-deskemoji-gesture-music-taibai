@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: espressif/idf:v5.5.1
+      image: espressif/idf:v5.4.2
 
     steps:
       - name: Checkout
@@ -15,8 +15,6 @@ jobs:
 
       - name: Prepare Partition Table and Custom Wake Word Config
         run: |
-          sed -i '/otto-emoji-gif-component/d' main/idf_component.yml
-          sed -i 's/lvgl\/lvgl: ~9.3.0/lvgl\/lvgl: ==9.3.0/' main/idf_component.yml
           mkdir -p partitions
           cat << 'EOF' > partitions/custom_16m_mn.csv
           # Name,   Type, SubType, Offset,  Size, Flags
