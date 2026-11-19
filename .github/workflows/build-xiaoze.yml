@@ -51,7 +51,7 @@ jobs:
           rm -f sdkconfig
           idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.esp32s3;sdkconfig.xiaoze" set-target esp32s3
           idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.esp32s3;sdkconfig.xiaoze" build
-          idf.py merge-bin -o build/xiaozhi-xiaoze-merged.bin
+          idf.py merge-bin -o xiaozhi-xiaoze-merged.bin
 
       - name: Upload Merged Firmware
         uses: actions/upload-artifact@v4
