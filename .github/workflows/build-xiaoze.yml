@@ -45,6 +45,7 @@ jobs:
           EOF
 
       - name: Build Firmware
+        shell: bash
         run: |
           source /opt/esp/idf/export.sh
           rm -f sdkconfig
