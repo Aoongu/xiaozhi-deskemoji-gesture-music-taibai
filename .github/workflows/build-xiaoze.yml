@@ -1,0 +1,59 @@
+name: Build DeskEmoji XiaoZe
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: espressif/idf:v5.5.1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare Partition Table and Custom Wake Word Config
+        run: |
+          mkdir -p partitions
+          cat << 'EOF' > partitions/custom_16m_mn.csv
+          # Name,   Type, SubType, Offset,  Size, Flags
+          nvs,      data, nvs,     0x9000,    0x4000,
+          otadata,  data, ota,     0xd000,    0x2000,
+          phy_init, data, phy,     0xf000,    0x1000,
+          model,    data, spiffs,  0x10000,   4M,
+          ota_0,    app,  ota_0,   0x410000,  5M,
+          ota_1,    app,  ota_1,   0x910000,  5M,
+          EOF
+
+          cat << 'EOF' > sdkconfig.xiaoze
+          CONFIG_BOARD_TYPE_ESP32_S3N16R8_EMOJI=y
+          CONFIG_OLED_SSD1306_128X64=y
+          CONFIG_LANGUAGE_ZH_CN=y
+          CONFIG_PARTITION_TABLE_CUSTOM=y
+          CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions/custom_16m_mn.csv"
+          CONFIG_USE_AUDIO_DEBUGGER=n
+          CONFIG_USE_AFE_WAKE_WORD=n
+          CONFIG_USE_ESP_WAKE_WORD=n
+          CONFIG_USE_CUSTOM_WAKE_WORD=y
+          CONFIG_CUSTOM_WAKE_WORD="ni hao xiao ze"
+          CONFIG_CUSTOM_WAKE_WORD_DISPLAY="你好小泽"
+          CONFIG_CUSTOM_WAKE_WORD_THRESHOLD=20
+          CONFIG_SR_WN_WN9_NIHAOXIAOZHI_TTS=n
+          CONFIG_SR_MN_CN_MULTINET7_QUANT=y
+          CONFIG_SR_MN_EN_NONE=y
+          EOF
+
+      - name: Build Firmware
+        run: |
+          source /opt/esp/idf/export.sh
+          rm -f sdkconfig
+          idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.esp32s3;sdkconfig.xiaoze" set-target esp32s3
+          idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.esp32s3;sdkconfig.xiaoze" build
+          idf.py merge-bin -o build/xiaozhi-xiaoze-merged.bin
+
+      - name: Upload Merged Firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: xiaozhi-deskemoji-xiaoze-2.0.1
+          path: build/xiaozhi-xiaoze-merged.bin
